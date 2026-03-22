@@ -122,3 +122,30 @@ export const logoutUserController = async(req,res)=>{
         })
     }
 }
+
+export const getMeController =async(req,res)=>{
+    try {
+        const user = await userModel.findById(req.user.id)
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"No User found "
+            })
+        }
+
+        return res.status(200).json({
+            success:true,
+            message:"get me data",
+            data:{
+                id:user._id,
+                email:user.email,
+                username:user.username
+            }
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success:false,
+            message:"Logout User Controller error",error
+        })
+    }
+}
