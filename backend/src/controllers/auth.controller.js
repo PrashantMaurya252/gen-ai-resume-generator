@@ -1,5 +1,7 @@
 import userModel from "../models/user.model.js";
-import * as jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
+import blackListTokenModal from "../models/blackListToken.model.js";
 
 
 export const registerUserController = async(req,res)=>{
@@ -37,7 +39,12 @@ export const registerUserController = async(req,res)=>{
 
         return res.status(201).json({
             success:true,
-            message:"User created successfully"
+            message:"User created successfully",
+            data:{
+                id:user._id,
+                email:user.email,
+                username:user.username
+            }
         })
     } catch (error) {
         console.error("register user controller error",error)
@@ -60,7 +67,7 @@ export const loginUserController = async(req,res)=>{
 
         const user = await userModel.findOne({email})
         if(!user){
-            return res.status({
+            return res.status(400).json({
                 success:false,
                 message:"User does not exist with this email"
             })
@@ -74,20 +81,44 @@ export const loginUserController = async(req,res)=>{
             })
         }
 
-        const {password:hashedPassword,...userData} = user
 
         const token = jwt.sign({id:user._id,username:user.username},process.env.JWT_SECRET,{expiresIn:"1d"})
         res.cookie("token",token)
         return res.status(200).json({
             success:true,
             message:"User Loggedin Successfully",
-            data:userData
+            data:{
+                id:user._id,
+                email:user.email,
+                username:user.username
+            }
         })
     } catch (error) {
         console.log("Login User controller error",error)
         return res.status(500).json({
             success:false,
             message:"Login User Controller error",error
+        })
+    }
+}
+
+export const logoutUserController = async(req,res)=>{
+    try {
+        const token = req.cookies.token
+        if(token){
+            await blackListTokenModal.create({token})
+        }
+
+        res.clearCookie("token")
+        return res.status(200).json({
+            success:true,
+            message:"User Logged out successfully"
+        })
+    } catch (error) {
+        console.log("Logout User Error",error)
+        return res.status(500).json({
+            success:false,
+            message:"Logout User Controller error",error
         })
     }
 }
