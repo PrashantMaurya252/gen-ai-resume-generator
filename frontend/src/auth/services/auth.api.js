@@ -2,7 +2,7 @@ import axios from 'axios'
 
 
 
-const BACKEND_URL = import.meta.env.BACKEND_URL
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 const api = axios.create({
     baseURL:BACKEND_URL,
@@ -10,7 +10,7 @@ const api = axios.create({
 })
 export const registerUser =async({username,email,password})=>{
     try {
-        api.post(`/api/auth/register`,{username,email,password})
+        const res = api.post(`/api/auth/register`,{username,email,password})
         return res.data
     } catch (error) {
         console.log("Register user error",error)
@@ -20,7 +20,7 @@ export const registerUser =async({username,email,password})=>{
 
 export const loginUser =async({email,password})=>{
     try {
-        api.post(`/api/auth/login`,{email,password})
+        const res = api.post(`/api/auth/login`,{email,password})
         return res.data
     } catch (error) {
         console.log(error)
@@ -29,7 +29,7 @@ export const loginUser =async({email,password})=>{
 
 export const logout =async()=>{
     try {
-        api.get(`/api/auth/logout`)
+        const res = api.get(`/api/auth/logout`)
         return res.data
     } catch (error) {
         console.log(error)
@@ -38,7 +38,7 @@ export const logout =async()=>{
 
 export const getMe =async()=>{
     try {
-        api.get(`/api/auth/get-me`)
+        const res = api.get(`/api/auth/get-me`)
         return res.data
     } catch (error) {
         console.log(error)
