@@ -1,17 +1,23 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import "../auth.form.scss"
 import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../hooks/useAuth'
+import { AuthContext } from '../../features/auth/auth.context'
+import { loginUser } from '../services/auth.api'
 
 const Login = () => {
     const {loading, handleLogin} = useAuth()
     const [email,setEmail] = useState("")
     const [password,setPassword] = useState("")
     const navigate = useNavigate()
+    const context = useContext(AuthContext)
+    const {user,setUser} = context
 
-    const handleSignIn =(e)=>{
+    const handleSignIn =async(e)=>{
         e.preventDefault()
-        handleLogin({email,password})
+        await handleLogin({email,password})
+        // const response = await loginUser({email,password})
+        // console.log(response)
         navigate("/")
     }
     if(loading){

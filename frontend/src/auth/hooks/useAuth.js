@@ -11,7 +11,8 @@ export const useAuth = ()=>{
         try {
             setLoading(true)
             const response = await loginUser({email,password})
-            setUser(response)
+            console.log(response)
+            setUser(response.data)
         } catch (error) {
             console.log(error)
         }finally{
