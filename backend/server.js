@@ -4,7 +4,9 @@ import app from "./src/app.js";
 import connectToDB from './src/services/database.js';
 
 
+
 const PORT = process.env.PORT
 
 connectToDB()
+
 app.listen(PORT,()=>console.log(`Server is running on PORT ${PORT}`))
