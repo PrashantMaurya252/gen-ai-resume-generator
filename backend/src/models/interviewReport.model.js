@@ -45,8 +45,7 @@ const preparationPlanSchema = new mongoose.Schema({
         required:[true,"Focus is required"]
     },
     tasks:[{
-        type:String,
-        required:[true,"Task is required"]
+        type:String
     }]
 },{_id:false})
 
@@ -57,12 +56,16 @@ const skillGapSchema = new mongoose.Schema({
     },
     severity:{
         type:String,
-        enum:["Low","Medium","High"],
+        enum:["low","medium","high"],
         required:[true,"Severity is required"]
     }
 },{_id:false})
 
 const interviewReportSchema = new mongoose.Schema({
+    user:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"users"
+    },
     jobDescription:{
         type:String,
         required:[true,"Job Description are required"]
@@ -76,7 +79,7 @@ const interviewReportSchema = new mongoose.Schema({
     matchScore:{
         type:Number,
         min:0,
-        max:0
+        max:100
     },
     technicalQuestions:[technicalQuestionsSchema],
     behaviralQuestions:[behaviralQuestionsSchema],

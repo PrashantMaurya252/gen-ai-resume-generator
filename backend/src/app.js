@@ -2,6 +2,7 @@ import express from 'express'
 import authRoutes from './routes/auth.route.js'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import interviewRouter from './routes/interview.route.js'
 
 
 const app = express()
@@ -18,6 +19,7 @@ app.use(cookieParser())
 app.use(cors(corsOptions))
 
 app.use("/api/auth",authRoutes)
+app.use("/api/interview",interviewRouter)
 
 
 export default app

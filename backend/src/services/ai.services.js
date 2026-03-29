@@ -1,60 +1,81 @@
 import {GoogleGenAI} from "@google/genai"
 import {z} from "zod"
 import {zodToJsonSchema} from "zod-to-json-schema"
+import config from "../config/config.js"
 
 const ai = new GoogleGenAI({
-    apiKey:process.env.GOOGLE_GENAI_API_KEY
+    apiKey:config.GEMENI_API_KEY
 })
 
 const interviewReportSchema = z.object({
-    matchScore:z.number().description("A score between 0 to 100 indicating how well candidate profile matching the job description"),
-    technicalQuestions:z.array(z.object({
-        question:z.string().description("Question can be asked in interview"),
-        intention:z.string().description("Intention behind the question"),
-        answer:z.string().description("How to answer this question,What should be approach, what points should be cover")
-    })).description("Technical questions tha can be asked in the interview along with their intention and answer"),
-    behavioralQuestions:z.array(z.object({
-        question:z.string().description("Question can be asked in interview"),
-        intention:z.string().description("Intention behind the question"),
-        answer:z.string().description("How to answer this question,What should be approach, what points should be cover")
-    })).description("Behaviral questions tha can be asked in the interview along with their intention and answer"),
-    skillGaps:z.array(z.object({
-        skill:z.string().description("Skill in which candidate is lacking"),
-        severity:z.string().description("The severity of skill gap i.e low,medium,high")
-    })).description("List of skills gap of candidate along with their severity"),
-    preparationPlan:z.array(z.object({
-        day:z.number().description("The day number in preparation plan, starting from 1"),
-        focus:z.string().description("the main focus of the day in the preparation plan"),
-        task:z.string().description("List of tasks to be done on this day")
-    })).description("A day wise preparation plan to follow by candidate")
+    matchScore: z.number().describe("A score between 0 and 100 indicating how well the candidate's profile matches the job describe"),
+    technicalQuestions: z.array(z.object({
+        question: z.string().describe("The technical question can be asked in the interview"),
+        intention: z.string().describe("The intention of interviewer behind asking this question"),
+        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc.")
+    })).describe("Technical questions that can be asked in the interview along with their intention and how to answer them"),
+    behavioralQuestions: z.array(z.object({
+        question: z.string().describe("The technical question can be asked in the interview"),
+        intention: z.string().describe("The intention of interviewer behind asking this question"),
+        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc.")
+    })).describe("Behavioral questions that can be asked in the interview along with their intention and how to answer them"),
+    skillGaps: z.array(z.object({
+        skill: z.string().describe("The skill which the candidate is lacking"),
+        severity: z.enum([ "low", "medium", "high" ]).describe("The severity of this skill gap, i.e. how important is this skill for the job and how much it can impact the candidate's chances")
+    })).describe("List of skill gaps in the candidate's profile along with their severity"),
+    preparationPlan: z.array(z.object({
+        day: z.number().describe("The day number in the preparation plan, starting from 1"),
+        focus: z.string().describe("The main focus of this day in the preparation plan, e.g. data structures, system design, mock interviews etc."),
+        tasks: z.array(z.string()).describe("List of tasks to be done on this day to follow the preparation plan, e.g. read a specific book or article, solve a set of problems, watch a video etc.")
+    })).describe("A day-wise preparation plan for the candidate to follow in order to prepare for the interview effectively"),
+    title: z.string().describe("The title of the job for which the interview report is generated"),
 })
-const generateInterviewReport = async({resume,selfDescription,jobDescription})=>{
 
-    const prompt = `Generate an interview report for a candidate with following details:
-    Resume:${resume}
-    SelfDescription:${selfDescription}
-    JobDescription:${jobDescription}
-    `
-    try {
-        const response = await ai.models.generateContent({
-        model:"gemini-3-flash-preview",
-        contents:prompt,
-        config:{
-            responseMimeType:"application/json",
-            responseSchema:zodToJsonSchema(interviewReportSchema)
+async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
+
+
+    const prompt = `Generate an interview report for a candidate with the following details:
+                        Resume: ${resume},
+                        Self Description: ${selfDescription},
+                        Job Description: ${jobDescription},
+
+            my response must follow below structure:
+            {
+            matchScore: z.number().describe("A score between 0 and 100 indicating how well the candidate's profile matches the job describe"),
+    technicalQuestions: z.array(z.object({
+        question: z.string().describe("The technical question can be asked in the interview"),
+        intention: z.string().describe("The intention of interviewer behind asking this question"),
+        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc.")
+    })).describe("Technical questions that can be asked in the interview along with their intention and how to answer them"),
+    behavioralQuestions: z.array(z.object({
+        question: z.string().describe("The technical question can be asked in the interview"),
+        intention: z.string().describe("The intention of interviewer behind asking this question"),
+        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc.")
+    })).describe("Behavioral questions that can be asked in the interview along with their intention and how to answer them"),
+    skillGaps: z.array(z.object({
+        skill: z.string().describe("The skill which the candidate is lacking"),
+        severity: z.enum([ "low", "medium", "high" ]).describe("The severity of this skill gap, i.e. how important is this skill for the job and how much it can impact the candidate's chances")
+    })).describe("List of skill gaps in the candidate's profile along with their severity"),
+    preparationPlan: z.array(z.object({
+        day: z.number().describe("The day number in the preparation plan, starting from 1"),
+        focus: z.string().describe("The main focus of this day in the preparation plan, e.g. data structures, system design, mock interviews etc."),
+        tasks: z.array(z.string()).describe("List of tasks to be done on this day to follow the preparation plan, e.g. read a specific book or article, solve a set of problems, watch a video etc.")
+    })).describe("A day-wise preparation plan for the candidate to follow in order to prepare for the interview effectively"),
+    title: z.string().describe("The title of the job for which the interview report is generated"),
+            }
+
+                    `
+    const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            // responseSchema: zodToJsonSchema(interviewReportSchema),
         }
     })
+
     return JSON.parse(response.text)
-    } catch (error) {
-        console.log("generate Interview Report function error",error)
-    }
 }
 
-export const invokeGemeniAi = async()=>{
-    const response = await ai.models.generateContent({
-        model:"gemini-2.5-flash",
-        contents:"Hello Gemeni ! Explain what is interview ?"
-    })
 
-    console.log(response.text)
-}
+export {generateInterviewReport}
